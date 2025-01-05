@@ -8,36 +8,65 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 
+interface Message {
+  sender: string;
+  text: string;
+  timestamp: string;
+  role?: string;  // 添加 role 字段用于 API 通信
+}
+
 const Chat: React.FC = () => {
-  const [messages, setMessages] = useState<{ sender: string; text: string; timestamp: string }[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const welcomeMessage = {
       sender: "AI",
-      text: "您好！我是 DeepSeek AI 助手。我可以帮助您回答问题、编写代码、分析数据等。请告诉我您需要什么帮助？",
-      timestamp: new Date().toLocaleTimeString()
+      text: "你好啊！我是你的学习伙伴小深。让我们一起探索知识的奥秘吧！记住，思考的过程比答案更重要哦！🌟",
+      timestamp: new Date().toLocaleTimeString(),
+      role: "assistant"
     };
     setMessages([welcomeMessage]);
   }, []);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    const userMessage = { sender: "User", text: input, timestamp: new Date().toLocaleTimeString() };
+    const userMessage = { 
+      sender: "User", 
+      text: input, 
+      timestamp: new Date().toLocaleTimeString(),
+      role: "user"
+    };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setLoading(true);
 
     try {
-      const response = await axios.post("/api/chat", { message: input });
-      const aiMessage = { sender: "AI", text: response.data.reply, timestamp: new Date().toLocaleTimeString() };
+      // 构建对话历史
+      const conversationHistory = messages.map(msg => ({
+        role: msg.role === "user" ? "user" : "assistant",
+        content: msg.text
+      }));
+
+      const response = await axios.post("/api/chat", { 
+        message: input,
+        conversationHistory: conversationHistory
+      });
+
+      const aiMessage = { 
+        sender: "AI", 
+        text: response.data.reply, 
+        timestamp: new Date().toLocaleTimeString(),
+        role: "assistant"
+      };
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       const errorMessage = { 
         sender: "AI", 
-        text: "抱歉，我暂时无法回应您的请求。请稍后再试。", 
-        timestamp: new Date().toLocaleTimeString() 
+        text: "抱歉，我暂时无法回应你的请求。请稍后再试。", 
+        timestamp: new Date().toLocaleTimeString(),
+        role: "assistant"
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
