@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* 自定义滚动条样式 */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--foreground);
+  border-radius: 4px;
+}
+
+/* 添加头像图片样式 */
+img[alt="AI Avatar"],
+img[alt="User Avatar"] {
+  object-fit: cover;
+}
