@@ -12,7 +12,7 @@ interface Message {
   sender: string;
   text: string;
   timestamp: string;
-  role?: string;  // 添加 role 字段用于 API 通信
+  role?: string;
 }
 
 const Chat: React.FC = () => {
@@ -21,7 +21,7 @@ const Chat: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const welcomeMessage = {
+    const welcomeMessage: Message = {
       sender: "AI",
       text: "你好啊！我是你的学习伙伴小深。让我们一起探索知识的奥秘吧！记住，思考的过程比答案更重要哦！🌟",
       timestamp: new Date().toLocaleTimeString(),
@@ -32,7 +32,7 @@ const Chat: React.FC = () => {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    const userMessage = { 
+    const userMessage: Message = { 
       sender: "User", 
       text: input, 
       timestamp: new Date().toLocaleTimeString(),
@@ -43,7 +43,6 @@ const Chat: React.FC = () => {
     setLoading(true);
 
     try {
-      // 构建对话历史
       const conversationHistory = messages.map(msg => ({
         role: msg.role === "user" ? "user" : "assistant",
         content: msg.text
@@ -54,15 +53,15 @@ const Chat: React.FC = () => {
         conversationHistory: conversationHistory
       });
 
-      const aiMessage = { 
+      const aiMessage: Message = { 
         sender: "AI", 
         text: response.data.reply, 
         timestamp: new Date().toLocaleTimeString(),
         role: "assistant"
       };
       setMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
-      const errorMessage = { 
+    } catch {
+      const errorMessage: Message = { 
         sender: "AI", 
         text: "抱歉，我暂时无法回应你的请求。请稍后再试。", 
         timestamp: new Date().toLocaleTimeString(),
@@ -110,8 +109,8 @@ const Chat: React.FC = () => {
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeRaw, rehypeSanitize]}
                       components={{
-                        code({node, inline, className, children, ...props}) {
-                          const match = /language-(\w+)/.exec(className || '');
+                        code({ inline, className, children, ...props }) {
+                          // const languageMatch = /language-(\w+)/.exec(className || '');
                           return !inline ? (
                             <pre className="p-4 bg-gray-800 rounded-lg overflow-x-auto">
                               <code className={className} {...props}>
@@ -125,11 +124,11 @@ const Chat: React.FC = () => {
                           );
                         },
                         // 自定义其他 Markdown 元素的样式
-                        p: ({children}) => <p className="mb-2 last:mb-0">{children}</p>,
-                        ul: ({children}) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
-                        ol: ({children}) => <ol className="list-decimal ml-4 mb-2">{children}</ol>,
-                        li: ({children}) => <li className="mb-1">{children}</li>,
-                        a: ({href, children}) => (
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal ml-4 mb-2">{children}</ol>,
+                        li: ({ children }) => <li className="mb-1">{children}</li>,
+                        a: ({ href, children }) => (
                           <a 
                             href={href} 
                             target="_blank" 

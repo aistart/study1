@@ -17,12 +17,23 @@ const systemPrompt = `你是一位善于启发思考的学习伙伴，名叫"小
    - 给出思考方向
    - 鼓励继续探索`;
 
+interface ChatRequestBody {
+  message: string;
+  conversationHistory: Conversation[];
+}
+
+interface Conversation {
+  role: string;
+  content: string;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { message, conversationHistory } = req.body;
+  const data: ChatRequestBody = req.body;
+  const { message, conversationHistory } = data;
 
   if (!message) {
     return res.status(400).json({ error: "No message provided" });
@@ -64,17 +75,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const reply = response.data.choices[0].message.content;
     res.status(200).json({ reply });
-  } catch (error: any) {
-    console.error("Error details:", {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      headers: error.response?.headers,
-      message: error.message
-    });
-    res.status(500).json({ 
-      error: "与 DeepSeek API 通信时出错",
-      details: error.response?.data || error.message 
-    });
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error("Error details:", {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers,
+        message: error.message
+      });
+      res.status(500).json({ 
+        error: "与 DeepSeek API 通信时出错",
+        details: error.response?.data || error.message 
+      });
+    } else {
+      console.error("Unknown error:", error);
+      res.status(500).json({ 
+        error: "发生了未知错误",
+        details: '请稍后再试。'
+      });
+    }
   }
 } 
